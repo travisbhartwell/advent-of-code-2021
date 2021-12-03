@@ -35,9 +35,21 @@ pub fn generator(input: &str) -> Result<Vec<Movement>, &'static str> {
     input.lines().map(str::parse).collect()
 }
 
+#[derive(Debug, Default)]
+pub struct Position {
+    depth: u32,
+    horizontal: u32,
+}
+
+impl Position {
+    fn cross(&self) -> u32 {
+        self.depth * self.horizontal
+    }
+}
+
 pub trait Submarine {
-    fn depth(&self) -> u32;
-    fn horizontal(&self) -> u32;
+    fn position(&self) -> &Position;
+
     fn move_sub(&mut self, movement: &Movement);
 
     fn move_all(&mut self, movements: &[Movement]) {
@@ -48,31 +60,26 @@ pub trait Submarine {
 
     fn solve(&mut self, movements: &[Movement]) -> u32 {
         self.move_all(movements);
-        self.depth() * self.horizontal()
+        self.position().cross()
     }
 }
 
 #[derive(Default)]
 pub struct Submarine1 {
-    depth: u32,
-    horizontal: u32,
+    position: Position,
 }
 
 impl Submarine for Submarine1 {
     fn move_sub(&mut self, movement: &Movement) {
         match movement {
-            Movement::Up(distance) => self.depth -= distance,
-            Movement::Down(distance) => self.depth += distance,
-            Movement::Forward(distance) => self.horizontal += distance,
+            Movement::Up(distance) => self.position.depth -= distance,
+            Movement::Down(distance) => self.position.depth += distance,
+            Movement::Forward(distance) => self.position.horizontal += distance,
         }
     }
 
-    fn depth(&self) -> u32 {
-        self.depth
-    }
-
-    fn horizontal(&self) -> u32 {
-        self.horizontal
+    fn position(&self) -> &Position {
+        &self.position
     }
 }
 
@@ -85,8 +92,7 @@ pub fn part1(input: &[Movement]) -> u32 {
 
 #[derive(Default)]
 pub struct Submarine2 {
-    depth: u32,
-    horizontal: u32,
+    position: Position,
     aim: u32,
 }
 
@@ -96,18 +102,14 @@ impl Submarine for Submarine2 {
             Movement::Up(distance) => self.aim -= distance,
             Movement::Down(distance) => self.aim += distance,
             Movement::Forward(distance) => {
-                self.horizontal += distance;
-                self.depth += self.aim * distance
+                self.position.horizontal += distance;
+                self.position.depth += self.aim * distance
             }
         }
     }
 
-    fn depth(&self) -> u32 {
-        self.depth
-    }
-
-    fn horizontal(&self) -> u32 {
-        self.horizontal
+    fn position(&self) -> &Position {
+        &self.position
     }
 }
 

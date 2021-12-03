@@ -35,19 +35,44 @@ pub fn generator(input: &str) -> Result<Vec<Movement>, &'static str> {
     input.lines().map(str::parse).collect()
 }
 
+pub trait Submarine {
+    fn depth(&self) -> u32;
+    fn horizontal(&self) -> u32;
+    fn move_sub(&mut self, movement: &Movement);
+
+    fn move_all(&mut self, movements: &[Movement]) {
+        for mvt in movements {
+            self.move_sub(mvt)
+        }
+    }
+
+    fn solve(&mut self, movements: &[Movement]) -> u32 {
+        self.move_all(movements);
+        self.depth() * self.horizontal()
+    }
+}
+
 #[derive(Default)]
 pub struct Submarine1 {
     depth: u32,
     horizontal: u32,
 }
 
-impl Submarine1 {
-    pub fn move_sub(&mut self, movement: &Movement) {
+impl Submarine for Submarine1 {
+    fn move_sub(&mut self, movement: &Movement) {
         match movement {
             Movement::Up(distance) => self.depth -= distance,
             Movement::Down(distance) => self.depth += distance,
             Movement::Forward(distance) => self.horizontal += distance,
         }
+    }
+
+    fn depth(&self) -> u32 {
+        self.depth
+    }
+
+    fn horizontal(&self) -> u32 {
+        self.horizontal
     }
 }
 
@@ -55,11 +80,7 @@ impl Submarine1 {
 pub fn part1(input: &[Movement]) -> u32 {
     let mut sub = Submarine1::default();
 
-    for mvt in input {
-        sub.move_sub(mvt)
-    }
-
-    sub.horizontal * sub.depth
+    sub.solve(input)
 }
 
 #[derive(Default)]
@@ -69,8 +90,8 @@ pub struct Submarine2 {
     aim: u32,
 }
 
-impl Submarine2 {
-    pub fn move_sub(&mut self, movement: &Movement) {
+impl Submarine for Submarine2 {
+    fn move_sub(&mut self, movement: &Movement) {
         match movement {
             Movement::Up(distance) => self.aim -= distance,
             Movement::Down(distance) => self.aim += distance,
@@ -80,15 +101,19 @@ impl Submarine2 {
             }
         }
     }
+
+    fn depth(&self) -> u32 {
+        self.depth
+    }
+
+    fn horizontal(&self) -> u32 {
+        self.horizontal
+    }
 }
 
 #[aoc(day2, part2)]
 pub fn part2(input: &[Movement]) -> u32 {
     let mut sub = Submarine2::default();
 
-    for mvt in input {
-        sub.move_sub(mvt)
-    }
-
-    sub.horizontal * sub.depth
+    sub.solve(input)
 }
